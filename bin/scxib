@@ -6,8 +6,12 @@ show_help() {
   echo "Options:"
   echo "  -namespace <namespace>  SC.Application namespace"
   echo "  -page <page name>       SC.Page name"
-  echo "  -panel <panel name>     SC.Panel name"
+  echo "  -sc_require <resource>  Hint that page has a dependency on resource" 
+  echo "  -mixins                 Generate mixin definitions instead of designs"
+  echo "  -debug                  Dump XSLT output before JavaScript prettification - useful for debugging XSLT issues"
 }
+
+outputType="design"
 
 while true; do
     case "$1" in
@@ -24,12 +28,14 @@ while true; do
             echo "-page requires an argument" 1>&2
             exit 1
           fi ;;
-      -panel) if [ $# -gt 1 ]; then
-            panel=$2; shift 2
+      -sc_require) if [ $# -gt 1 ]; then
+            requiredModules="$requiredModules $2"; shift 2
           else
-            echo "-panel requires an argument" 1>&2
+            echo "-sc_require requires an argument" 1>&2
             exit 1
           fi ;;
+      -mixins) outputType="mixin"; shift;;
+      -debug) debugMode="YES"; shift;;
       --) shift; break;;
       -*) echo "invalid option: $1" 1>&2; show_help; exit 1;;
       *)  break;;
@@ -40,14 +46,31 @@ if [[ -z $namespace ]]; then
   echo "$0: no namespace"; exit 1
 fi
 
+if [[ -z $page ]]; then
+  echo "$0: no page"; exit 1
+fi
+
 basedir=`dirname $0`/..
 
-if [[ -n $page ]]; then
-  src=`xsltproc --param namespace "'$namespace'" --param pageName "'$page'" $basedir/resources/SCXIB.xslt $@`
-elif [[ -n $panel ]]; then
-  src=`xsltproc --param namespace "'$namespace'" --param panelName "'$panel'" $basedir/resources/SCXIB.xslt $@`
-else
-  echo "$0: no page or panel"; exit 1
+if [[ $debugMode ]]; then
+   echo xsltproc --param namespace "'$namespace'" --param outputType "'$outputType'" --param pageName "'$page'" $basedir/resources/SCXIB.xslt $@ >&2
+fi
+
+export LIBXSLT_PLUGINS_PATH=$basedir/resources
+
+src=`xsltproc  --param namespace "'$namespace'" --param outputType "'$outputType'" --param pageName "'$page'" $basedir/resources/SCXIB.xslt $@`
+
+if [[ $debugMode ]]; then
+  echo '*** preproc: ***' >&2
+  echo "$src" >&2
+  echo '*** end preproc ***' >&2
+fi
+
+if [[ $requiredModules ]]; then
+  for i in $requiredModules
+  do
+ 	 echo 'sc_require("'$i'");'
+  done
 fi
 
 exec $JSC $basedir/lib/parse-js._js $basedir/lib/process._js $basedir/lib/beautify._js -- "$src"
