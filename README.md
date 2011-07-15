@@ -1,24 +1,12 @@
-SCXIB - Interface Builder for the Web
-=====================================
+This is a fork of SCXIB whose main point is to extend the functionality to the point that its
+no longer needed to edit the resulting generated code, and thus the Nib file can be edited
+at will.
 
-SCXIB (pronounced ska-zib) grew out of the desire to use Interface Builder
-as a design tool for SproutCore applications.
-
-[View the Demo Video]
+One main change from the original SCXIB - this version always creates an SC.Page, which contains
+any all views that are embedded in the Nib file.  You may assign names to each view within the page by
+editing an object's Label in IB (within the identity metadata of the object)
 
 ## How to use SCXIB
-
-### On-the-fly Application Loading
-
-Transform XIB files for your SproutCore application to load and use during development:
-
-    SCXIB.loadXibWithOptions(sc_static('MainPage.xib'), {
-      namespace: DemoApp.NAMESPACE,
-      pageName: 'mainPage',
-      callback: function () {
-        DemoApp.getPath('mainPage.mainPane').append();
-      }
-    });
 
 ### XIB to JavaScript
 
@@ -26,14 +14,19 @@ Transform a XIB file into a JavaScript file for your SproutCore application
 using a command line tool:
     ./bin/scxib -namespace DemoApp -page mainPage apps/demo_app/resources/MainPage.xib
 
+Some useful options:
+
+  - -sc_require {module_name}  - embeds an sc_require directive in front of class definition.  Can be used more than once
+  - -debug - dumps the XSLT generated code before prettyfication - useful for trying to solve coding errors
+
 ## Requirements
 
-  - Interface Builder for XCode 3.2.x
+  - Interface Builder for XCode 3.2.x or 4.x
   - SproutCore
 
 ## Current Class Mappings
 
-  - NSWindow -> SC.Page
+  - NSWindow -> SC.MainPane
   - NSPanel -> SC.Panel
   - NSView -> SC.View
   - NSCustomView -> your app's custom view name
@@ -41,6 +34,7 @@ using a command line tool:
   - NSTextField -> SC.TextFieldView
   - NSSplitView -> SC.SplitView
   - IKImageView -> SC.ImageView
+  - NSImageView -> SC.ImageView
   - NSCheckBox -> SC.CheckBoxView
   - NSButton -> SC.ButtonView
   - NSPopUpButton -> SC.SelectFieldView
@@ -56,9 +50,7 @@ using a command line tool:
   - NSTabView -> SC.TabView
   - NSTableView -> SC.TableView (Requires Sproutcore 1.4+)
   - NSBox Horizontal/Vertical -> SC.SeparatorView:layoutDirection SC.LAYOUT\_HORIZONTAL/SC.LAYOUT\_VERTICAL
-
-[View the Demo Video]: http://www.vimeo.com/15064851
-
+  - NSMenu -> SC.MenuPane
 
 ## Class Documentation
 If you want to bind ListViews or TableViews to objects, you need to set a
