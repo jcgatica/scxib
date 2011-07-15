@@ -24,6 +24,8 @@ Some useful options:
   - Interface Builder for XCode 3.2.x or 4.x
   - SproutCore
 
+Make sure to build the native hex extensions plugin before running scxib.  Make on the current directory should be sufficient.
+
 ## Current Class Mappings
 
   - NSWindow -> SC.MainPane
